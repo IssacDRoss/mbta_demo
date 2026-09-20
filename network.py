@@ -1,4 +1,5 @@
 import API_interfaces
+from route import MBTARoute
 
 DEBUG = False
 
@@ -17,6 +18,9 @@ class MBTANetwork:
         for route in self.json_return['data']:
             self.routes.append(MBTARoute(route))
 
+        self.in_network_stops = self._get_in_network_stops()
+        self.transfer_stations = self._get_transfer_stations()
+
     # Methods for various interesting queries
     def get_longest_route(self):
         """
@@ -28,6 +32,7 @@ class MBTANetwork:
 
         route_id = longest_route.route_id
         length = len(longest_route.stops)
+        print(f"Longest Subway: {route_id}, number of stops = {length}")
         return route_id, length
 
     def get_shortest_route(self):
@@ -40,6 +45,8 @@ class MBTANetwork:
 
         route_id = shortest_route.route_id
         length = len(shortest_route.stops)
+        
+        print(f"Shortest Subway: {route_id}, number of stops = {length}")
         return route_id, length
 
     def list_transfer_stations(self):
@@ -55,26 +62,7 @@ class MBTANetwork:
                     connecting_routes.append(route.route_name)
             print(f"Transfer Station: {tf_name}, connects routes: {connecting_routes}")
 
-    @property
-    def transfer_stations(self):
-        """
-        Returns a list of transfer stations in the list of MBTA routes.
-        A transfer station is defined as a stop that connects 2 or more routes, specifically that are within the network / filter this class contains.
-        """
-        transfer_stations = []
-        potential_transfer_stations = []
-        for stop in self.in_network_stops:
-            # find all routes that connect at this stop
-            connecting_routes = []
-            for route in self.routes:
-                if stop in route.stops:
-                    connecting_routes.append(route.route_name)
-            if len(connecting_routes) > 1:
-                transfer_stations.append(stop)
-        return transfer_stations
-
-    @property
-    def in_network_stops(self):
+    def _get_in_network_stops(self):
         """
         Returns a list of stops for all routes in the network of MBTA routes.
         Useful for rejecting impossible routes, e.g. if a stop is not in the list of stops for any route "in network", it is not a valid stop.
@@ -87,45 +75,25 @@ class MBTANetwork:
                     stops.append(stop)
         return stops
 
+    def _get_transfer_stations(self):
+            """
+            Returns a list of transfer stations in the list of MBTA routes.
+            A transfer station is defined as a stop that connects 2 or more routes, specifically that are within the network / filter this class contains.
+            """
+            transfer_stations = []
+            for stop in self.in_network_stops:
+                # find all routes that connect at this stop
+                connecting_routes = []
+                for route in self.routes:
+                    if stop in route.stops:
+                        connecting_routes.append(route.route_name)
+                if len(connecting_routes) > 1:
+                    transfer_stations.append(stop)
+            return transfer_stations
+
     @property
     def route_names(self):
         """
         Returns a list of the long names (i.e. including 'line') of the MBTA routes.
         """
         return [route.route_name for route in self.routes]
-
-
-class MBTARoute:
-    """
-    Class for storing & interacting with a single MBTA route, providing methods for various filters or queries
-    """
-    def __init__(self, route):
-        """
-        Initializes the MBTARoute class based on a provided route object.
-        """
-        self.route = route
-        self.route_id = route['id']
-        self.stops = self.get_stops_for_route(self.route_id)
-
-    def get_stops_for_route(self, route_id):
-            """
-            Returns a list of stops for a given route id.
-            """
-            filt = {
-                "filter[route]": route_id
-                }
-            stops = API_interfaces.get_stops_filtered(params=filt)
-    
-            # debug prints listing the stops for a given route
-            if DEBUG:
-                print (f"Route: {route_id}, number of stops = {len(stops['data'])}")
-                print (f"Stops: {[stop['attributes']['name'] for stop in stops['data']]}")
-    
-            return stops['data']
-
-    @property
-    def route_name(self):
-        """
-        Returns the long name of the MBTA route.
-        """
-        return self.route['attributes']['long_name']

@@ -6,11 +6,14 @@ Included in this repo are a few functions to interact with and query the MBTA ap
 
 ```
 MBTA_DEMO 
-├── routes.py             # Class for holding and interacting with a route
-├── API_interfaces.py     # Methods that directly interact with the MBTA API
-├── solutions.py          # "Solutions" to each takehome question, 
-|                           i.e. runnable functions to address each task
-└── README.md             # Documentation of folder (i.e this very file)
+├── routes.py               # Class for holding and interacting with a route
+├── API_interfaces.py       # Methods that directly interact with the MBTA API
+├── 1_list_subways.py       # Solution to 1st takehome question, prints list of each subway line
+├── 2_enumerate_subways.py  # Solution to 2nd takehome question, prints 
+|                             longest/shortest subway, and all transfer stations
+├── 3_get_directions.py     # Solution to 3rd takehome question, prints *a* viable path between
+|                             two provided stations
+└── README.md               # Documentation of folder (i.e this very file)
 ```
 
 # Take-home Questions
@@ -29,6 +32,7 @@ Please document your decision and your reasons for it.
 
 #### Solution discussion
 1. Download or Request? - I landed at requesting every time I run. the API key provides plenty of requests per minute, and a broadly more likely use case for something touching the mbta api is that it should have access to live information. Though the actual extent of these problems is extremely static, just manipulating a singular JSON download snapshot feels less relevant than leveraging the API's functionality for initial download. Certainly could justify downloading async for something deployed so it need not have an API key though.
+2. I made a network class so as to contain the json output from a given request, methods for interacting with it, and simplify access to the data. Leaned into methods for the given questions being added to the class rather than constructing logic in the script that is actually run, as in theory you want to use and extend the methodology to other consumers or uses without duplication.
 
 
 ### Question 2
@@ -39,8 +43,9 @@ Extend your program so it displays additional information:
 names for each of those stops
 
 #### Solution discussion
-1. This problem shows the weakness of just querying the API every time you want to know about the stops of a given route (i.e. leveraging the stops endpoint directly every time)
-2. Landed at polling all relevant stops during init, and having a getter to grab stops by line for later queries
+1. This problem shows the weakness of just querying the API every time you want to know something (i.e. leveraging the stops endpoint per route)
+2. Landed at polling all relevant stops per route during init, and having a getter to grab stops by line for later queries. This also led me to have a MBTARoute class to dramatically simplify the accessors for the types of information I actually want out of a given entry
+3. the "include" arg enables a cross compilation of data, but its unwieldy for a lightweight query. Realistically the larger dataclass construction leveraging these would be good to use when you need a variety of interlinked info.
 
 
 
@@ -55,3 +60,11 @@ Some examples:
  Davis to Kendall → Red Line
  Ashmont to Arlington → Red Line, Green Line
 How you handle input, represent train routes, and present output is your choice.
+
+#### Solutions discussion
+1. handling input: took these as keyword --args to enforce that they are provided. Inspect the station names against the list of stations in network and list those stations if the user enters an unexpected station name. basic protection like case tolerance helps make this usable.
+2. Train routes are a lot simpler to handle as a class than as an entry in a big json table of ~80% worthless info
+3. Simple printing of what the user selected, what routes/stops they start->transfer->get off at is baked into the find_path method of the "network" class so this could in theory be leveraged as part of a larger whole
+4. Algorithim for finding a path - while we could blindly traverse a map, a breadth-first search will be pretty simple and give us a short route, as opposed to potentially landing on some crazy circuitous route.
+5. A couple of things emerge from wanting a map to traverse.
+    A. well the stops can't just be a list of names anymore, they need to be actually structured along a direction of travel of the route. This necessitated additional sorting / processing on the MBTARoute object so it has an array that is traversable representing actually riding the train as opposed to alphabetically

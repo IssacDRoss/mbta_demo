@@ -56,7 +56,7 @@ def get_routes_filtered(params=None):
     resp = get_req("routes", params=params)
     return resp
 
-def get_stops_filtered(params=None):
+def get_stops_filtered(params={}):
     """
     Returns a list of MBTA stops according to json filters.
     Useful for filtering by type, mode, etc. See https://api-v3.mbta.com/docs/swagger/index.html#/Stops/get_stops for details.
