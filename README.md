@@ -27,6 +27,9 @@ on your computer
 download just the filtered data to your computer
 Please document your decision and your reasons for it.
 
+#### Solution discussion
+1. Download or Request? - I landed at requesting every time I run. the API key provides plenty of requests per minute, and a broadly more likely use case for something touching the mbta api is that it should have access to live information. Though the actual extent of these problems is extremely static, just manipulating the singular JSON download snapshot feels less relevant than leveraging the API's functionality. Certainly could justify downloading async for something deployed so it need not have an API key though.
+
 
 ### Question 2
 Extend your program so it displays additional information:

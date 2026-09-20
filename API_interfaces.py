@@ -8,19 +8,35 @@ def get_mbta_api_key():
     """
     Returns the MBTA API key from the environment variable.
     """    
-    # Note, set a local environment variable called MBTA_API_KEY to your personal MBTA API key. (Sorry no free rides on public transit!)
+    # Note, set a local environment variable called MBTA_API_KEY to your personal MBTA API key. (Sorry only a few free rides on public transit!)
     # You can request one here: https://api-v3.mbta.com/docs/swagger/index.html
     key = os.environ.get("MBTA_API_KEY")
     return key
 
-def get_req(endpoint,args=None):
+def get_default_header():
+    """
+    Returns a default header for the MBTA API request.
+    """
+    headers = {}
+
+    # if we have an API key available in the env vars, use it as another arg
+    if get_mbta_api_key():
+        headers["X-API-Key"] = get_mbta_api_key()
+    
+    return headers
+
+def set_mbta_api_key(key):
+    """
+    Sets the MBTA API key in the environment variable for this session
+    Useful for just passing a key
+    """
+    os.environ["MBTA_API_KEY"] = key
+
+def get_req(endpoint,params=None):
     """
     Returns the response from a GET request to the given endpoint and any additional arguments.
     """
-    # if we have an API key available in the env vars, use it as another arg
-    if get_mbta_api_key():
-        args = f"{args}?api_key={get_mbta_api_key()}"
-    resp = requests.get(f"{BASE_API_URL}/{endpoint}{args if args else ''}")
+    resp = requests.get(f"{BASE_API_URL}/{endpoint}", params=params, headers=get_default_header())
     return resp.json()
 
 def get_all_lines():
@@ -37,7 +53,16 @@ def get_lines_filtered(**kwargs):
     Useful for filtering by type, mode, etc. See https://api-v3.mbta.com/docs/swagger/index.html#/Routes/get_routes for details.
     """
     # pile together the query parameters from the kwargs
-    query_params = "&".join([f"{key}={value}" for key, value in kwargs.items()])
-    # send request using routes url + api key + query parameters
-    resp = get_req("routes", args=f"&{query_params}")
+    params = {}
+    for key, value in kwargs.items():
+        # Format key to match JSON:API filter standard
+        param_key = f"filter[{key}]"
+        # 2. Join list/tuple elements into a comma-separated string
+        if isinstance(value, (list, tuple, set)):
+            params[param_key] = ",".join(str(v) for v in value)
+        else:
+            params[param_key] = value
+
+    # send request using routes url + query parameters
+    resp = get_req("routes", params=params)
     return resp
