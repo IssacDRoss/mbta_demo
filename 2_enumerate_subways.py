@@ -14,7 +14,7 @@ def main():
 
     params = {
             "filter[type]": "0,1",   # Filter for subway and light rail
-            #"include": "stop",       # Include stops in the response
+            "include": "stop",       # Include stops in the response
             }
     subways = MBTANetwork(params=params)
 
@@ -25,9 +25,7 @@ def main():
     shortest_subway, shortest_length = subways.get_shortest_route()
     print(f"Shortest Subway: {shortest_subway}, number of stops = {shortest_length}")
     # List all stops that connect 2 or more routes, i.e. transfer stations
-    transfer_stations = subways.transfer_stations
-    tf_names = [stop['attributes']['name'] for stop in transfer_stations]
-    print(f"Transfer Stations: {tf_names}")
+    subways.list_transfer_stations()
 
 
 if __name__ == "__main__":

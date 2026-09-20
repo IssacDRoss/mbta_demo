@@ -28,7 +28,7 @@ download just the filtered data to your computer
 Please document your decision and your reasons for it.
 
 #### Solution discussion
-1. Download or Request? - I landed at requesting every time I run. the API key provides plenty of requests per minute, and a broadly more likely use case for something touching the mbta api is that it should have access to live information. Though the actual extent of these problems is extremely static, just manipulating the singular JSON download snapshot feels less relevant than leveraging the API's functionality. Certainly could justify downloading async for something deployed so it need not have an API key though.
+1. Download or Request? - I landed at requesting every time I run. the API key provides plenty of requests per minute, and a broadly more likely use case for something touching the mbta api is that it should have access to live information. Though the actual extent of these problems is extremely static, just manipulating a singular JSON download snapshot feels less relevant than leveraging the API's functionality for initial download. Certainly could justify downloading async for something deployed so it need not have an API key though.
 
 
 ### Question 2
@@ -37,6 +37,10 @@ Extend your program so it displays additional information:
  The name of the subway route with the fewest stops and the count of its stopsSoftware Engineer Take-Home Challenge2
  A list of the stops that connect two or more subway routes and the route
 names for each of those stops
+
+#### Solution discussion
+1. This problem shows the weakness of just querying the API every time you want to know about the stops of a given route (i.e. leveraging the stops endpoint directly every time)
+2. Landed at polling all relevant stops during init, and having a getter to grab stops by line for later queries
 
 
 
