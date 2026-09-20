@@ -1,16 +1,6 @@
 import API_interfaces
+from routes import MBTANetwork
 import argparse
-
-# solution_1 - Get all subway lines of the MBTA and print them
-def list_subway_lines():
-    # retrieve and print all "subway" lines of the MBTA
-    # type=0 for subway & type=1 for light rail.
-    lines = API_interfaces.get_lines_filtered(type=[0,1])
-    names = [line['attributes']['long_name'] for line in lines['data']]
-
-    print(names)
-
-    return 
 
 def main():
     parser = argparse.ArgumentParser(description="A script that accepts an API key.")
@@ -23,7 +13,14 @@ def main():
         API_interfaces.set_mbta_api_key(args.key)
 
     # List the subway lines (heavy & light rail)
-    list_subway_lines()
+    
+    # create a Routes object with a filter for subway lines (type=0 for subway & type=1 for light rail)
+    params = {
+        "filter[type]": "0,1",  # Filter for subway and light rail
+        }
+    subways = MBTANetwork(params=params)
+    # print the names of all resultant lines
+    print(f"Subway Lines: {subways.route_names}")
 
 if __name__ == "__main__":
     main()

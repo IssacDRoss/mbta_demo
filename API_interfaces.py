@@ -47,22 +47,20 @@ def get_all_lines():
     resp = get_req("routes")
     return resp
 
-def get_lines_filtered(**kwargs):
+def get_routes_filtered(params=None):
     """
-    Returns a list of MBTA lines according to comma separated kwarg filters.
+    Returns a list of MBTA routes according to json filters.
     Useful for filtering by type, mode, etc. See https://api-v3.mbta.com/docs/swagger/index.html#/Routes/get_routes for details.
     """
-    # pile together the query parameters from the kwargs
-    params = {}
-    for key, value in kwargs.items():
-        # Format key to match JSON:API filter standard
-        param_key = f"filter[{key}]"
-        # 2. Join list/tuple elements into a comma-separated string
-        if isinstance(value, (list, tuple, set)):
-            params[param_key] = ",".join(str(v) for v in value)
-        else:
-            params[param_key] = value
-
     # send request using routes url + query parameters
     resp = get_req("routes", params=params)
+    return resp
+
+def get_stops_filtered(params=None):
+    """
+    Returns a list of MBTA stops according to json filters.
+    Useful for filtering by type, mode, etc. See https://api-v3.mbta.com/docs/swagger/index.html#/Stops/get_stops for details.
+    """
+    # send request using stops url + query parameters
+    resp = get_req("stops", params=params)
     return resp
