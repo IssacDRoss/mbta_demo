@@ -3,6 +3,10 @@ from network import MBTANetwork
 import argparse
 
 def main():
+    """
+    Solution script for problem 1, wrapping the wrapping the construction of the subway structure, and printing the routes within, so as to be runnable on it's own.
+    """
+
     parser = argparse.ArgumentParser(description="A script that accepts an API key.")
     parser.add_argument("--key", type=str, required=False, help="API key for MBTA API access. Optional, can run with no API key, and will look for system env variable MBTA_API_KEY if not provided.")
     # Parse the arguments

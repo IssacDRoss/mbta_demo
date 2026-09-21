@@ -155,17 +155,17 @@ class MBTANetwork:
         """Compresses step-by-step station edges into an ordered list of lines taken and transfer stations used, then print that out legibly."""
         lines_used = []
         transfers = []
-        for to_id, fro_id, route_id in path:
+        for fro_id, to_id, route_id in path:
             if not lines_used or lines_used[-1] != self.routes[route_id].route_name:
                 lines_used.append(self.routes[route_id].route_name)
                 transfers.append(self.in_network_stops[fro_id]['attributes']['name'])
 
         # Produce i nice human readable set of directions
-        print(f"Route Found! Embark the {lines_used[0]} at {self.in_network_stops[path[0][1]]['attributes']['name']}.")
+        print(f"Route Found! Embark the {lines_used[0]} at {self.in_network_stops[path[0][0]]['attributes']['name']}.")
         # list each transfer taken (i.e. only between trains)
         for i in range(1,len(lines_used)):
             print(f"Transfer to the {lines_used[i]} at {transfers[i]}")
-        print(f"Disembark the {lines_used[-1]} at {self.in_network_stops[path[-1][0]]['attributes']['name']}. You have arrived!")
+        print(f"Disembark the {lines_used[-1]} at {self.in_network_stops[path[-1][1]]['attributes']['name']}. You have arrived!")
 
         return lines_used, transfers
 
