@@ -1,8 +1,8 @@
 import API_interfaces
 from route import MBTARoute
-from collections import defaultdict
+from collections import defaultdict, deque
 
-DEBUG = True
+DEBUG = False
 
 class MBTANetwork:
     """
@@ -111,7 +111,7 @@ class MBTANetwork:
 
     def find_path(self, start_stop, end_stop):
         """
-        Returns a list of routes that connect the start and end stops.
+        Returns a list of route names and stops connecting start_stop to end_stop using Breadth-First Search on self.graph built above.
         """
 
         # protect against inexact / incorrect entry
@@ -120,41 +120,79 @@ class MBTANetwork:
 
         print(f"Finding path between two stops in the MBTA subway network.")
         print(f"Start stop: {start_name}, End stop: {end_name}")
-        # naive check for direct connections, i.e. if both stops are on the same route
-        connecting_routes = []
-        for route_id, route in self.routes.items():
-            if start_id in route.stops and end_id in route.stops:
-                print(f"Direct connection found on route {route.route_name}.")
-                connecting_routes.append(route.route_name)
-                return connecting_routes
 
-        # if no direct connection, check for transfer stations on the lines
-        
-        return connecting_routes
+        # Queue items: (current_stop_id, path)
+        # path entry format: (from_stop_id, to_stop_id, route_used)
+        queue = deque([(start_id, [])])
+        visited = {start_id}
+
+        # keep exploring for as long as we can keep adding new stops to the search queue
+        while queue:
+            # pop the current location off the top of the search queue
+            current_stop, path = queue.popleft()
+
+            # check for completion of path
+            if current_stop == end_id:
+                # print out a nicely formatted set of instructions
+                return self._format_route_path(path)
+
+            # for every neighboring station, along each route, of the current stop
+            for neighbor_id, routes in self.graph[current_stop].items():
+                # skip already visited stops (i.e. don't make a loop)
+                if neighbor_id not in visited:
+                    visited.add(neighbor_id)
+                    # Select the first line connecting these two adjacent stops
+                    route_used = next(iter(routes))
+                    # track the path taken to reach this new station
+                    new_path = path + [(current_stop, neighbor_id, route_used)]
+                    # add to search queue
+                    queue.append((neighbor_id, new_path))
+
+        print(f"No path found after performing search of network!")
+        return []
+
+    def _format_route_path(self, path):
+        """Compresses step-by-step station edges into an ordered list of lines taken and transfer stations used, then print that out legibly."""
+        lines_used = []
+        transfers = []
+        for to_id, fro_id, route_id in path:
+            if not lines_used or lines_used[-1] != self.routes[route_id].route_name:
+                lines_used.append(self.routes[route_id].route_name)
+                transfers.append(self.in_network_stops[fro_id]['attributes']['name'])
+
+        # Produce i nice human readable set of directions
+        print(f"Route Found! Embark the {lines_used[0]} at {self.in_network_stops[path[0][1]]['attributes']['name']}.")
+        # list each transfer taken (i.e. only between trains)
+        for i in range(1,len(lines_used)):
+            print(f"Transfer to the {lines_used[i]} at {transfers[i]}")
+        print(f"Disembark the {lines_used[-1]} at {self.in_network_stops[path[-1][0]]['attributes']['name']}. You have arrived!")
+
+        return lines_used, transfers
+
 
     def handle_stop_names(self, stop_name):
-            """Protect around user entering a stop name that isn't obvious exactly a key. Return the id for stop, along with formatted name"""
-            # convert to title case, which is the format stop names are stored with
-            search_val = stop_name.title()
-    
-            stop_id = []
-            stop_name = []
-            # find the key / id for the given stop name within the in-network stops
-            # specifically looking for partial matches
-            for id, stop in self.in_network_stops.items():
-                if search_val in stop['attributes']['name']:
-                    stop_id.append(id)
-                    stop_name.append(stop['attributes']['name'])
-    
-            if len(stop_id) < 1:
-                print (self.stop_names)
-                raise ValueError(f"Stop entry {search_val} is not in the network. See above list of stops we have in-network")
-            if len(stop_id) > 1:
-                raise ValueError(f"Stop entry ['{stop_name}'] is ambiguous, specify between {stop_name}")
-    
-            return stop_id, stop_name
-    
-    
+        """Protect around user entering a stop name that isn't obvious exactly a key. Return the id for stop, along with formatted name"""
+        # convert to title case, which is the format stop names are stored with
+        search_val = stop_name.title()
+
+        stop_id = []
+        stop_name = []
+        # find the key / id for the given stop name within the in-network stops
+        # specifically looking for partial matches
+        for id, stop in self.in_network_stops.items():
+            if search_val in stop['attributes']['name']:
+                stop_id.append(id)
+                stop_name.append(stop['attributes']['name'])
+
+        if len(stop_id) < 1:
+            print (self.stop_names)
+            raise ValueError(f"Stop entry {search_val} is not in the network. See above list of stops we have in-network")
+        if len(stop_id) > 1:
+            raise ValueError(f"Stop entry ['{stop_name}'] is ambiguous, specify between {stop_name}")
+
+        # return just the one value, the list was only relevant for searching for multiple matches
+        return stop_id[0], stop_name[0]
+
 
     @property
     def route_names(self):
