@@ -1,6 +1,6 @@
 import API_interfaces
 
-DEBUG = True
+DEBUG = False
 
 class MBTARoute:
     """
@@ -18,7 +18,7 @@ class MBTARoute:
 
     def _get_stops_for_route(self, route_id):
             """
-            Returns a list of stops for a given route id.
+            Returns a list of stops for a given route id, in order as they are on the route.
             """
             filt = {
                 "filter[route]": route_id

@@ -60,6 +60,8 @@ def get_stops_filtered(params={}):
     """
     Returns a list of MBTA stops according to json filters.
     Useful for filtering by type, mode, etc. See https://api-v3.mbta.com/docs/swagger/index.html#/Stops/get_stops for details.
+    
+    The API returns this in an order (east/west, north/south) along path, otherwise we'd need to sort in some way.
     """
     # send request using stops url + query parameters
     resp = get_req("stops", params=params)

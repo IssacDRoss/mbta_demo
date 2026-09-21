@@ -1,7 +1,6 @@
 import API_interfaces
 import argparse
 from network import MBTANetwork
-from map import MBTAMap
 
 def main():
     parser = argparse.ArgumentParser(description="A script that accepts an API key.")
@@ -19,8 +18,7 @@ def main():
             "filter[type]": "0,1",   # Filter for subway and light rail
             }
     subways = MBTANetwork(params=params)
-    map = MBTAMap(subways)
-    map.find_path(args.start, args.end)
+    subways.find_path(args.start, args.end)
 
 
 if __name__ == "__main__":
