@@ -6,7 +6,10 @@ Included in this repo are a few functions to interact with and query the MBTA ap
 
 ```
 MBTA_DEMO 
-├── routes.py               # Class for holding and interacting with a route
+├── network.py              # Class for holding and interacting with a network of routes
+|                             Methods for investigating and path planning within a network
+|   test_network.py         # Unit tests for methods of the network.py
+├── route.py                # Class for holding and interacting with a route
 ├── API_interfaces.py       # Methods that directly interface with the MBTA API
 ├── 1_list_subways.py       # Solution to 1st takehome question, prints list of each subway line
 ├── 2_enumerate_subways.py  # Solution to 2nd takehome question, prints 
@@ -22,6 +25,8 @@ I decided to split the 3 problems into their own little scripts that can be run 
 2. `python 2_enumerate_subways.py`
 3. `python 3_get_directions.py --start "YOUR FAVORITE STATION" --end "SOME COOL DESTINATION"`
 Definitely produces some cruft with regard to adding the argparser for passing the key each time, but I didn't feel that a little gui or argument for which problem felt necessary. Obviously actually using this MBTANetwork class practically would have cleaner entrants, but this shows the ease of construction and advantage of putting most repeatable functionality as methods to that class.
+
+I added some unit tests for network.py using a mock network with mock routes. Given this is the bulk of the new functionality added, it made sense to ensure the init and construction of the stops worked well, separate from the interaction with the actual MBTA API & data.
 
 # Take-home Questions
 ### Question 1
